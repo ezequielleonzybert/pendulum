@@ -7,6 +7,18 @@
     <Filter Include="addons">
       <UniqueIdentifier>{0d8691cf-3f64-4c4b-bcef-38cf4b65afc7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="bin">
+      <UniqueIdentifier>{96c48a93-a992-4152-b584-dac83733e770}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bin\data">
+      <UniqueIdentifier>{c91d339c-f64b-4bb2-bd95-b2ba3213c420}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bin\data\audio">
+      <UniqueIdentifier>{0da4c9a2-7990-473b-a416-fbcf7a153bff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bin\data\fonts">
+      <UniqueIdentifier>{63fe72bf-415c-401c-b638-e8a4c9d850be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -33,6 +45,9 @@
     <ClCompile Include="src\stage.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\gem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\animations.h">
@@ -53,5 +68,50 @@
     <ClInclude Include="src\stage.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\gem.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\data\stage01.svg">
+      <Filter>bin\data</Filter>
+    </None>
+    <None Include="bin\data\audio\go.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\pendulumCrashSound0.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\pendulumCrashSound1.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\pendulumCrashSound2.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\pendulumCrashSound3.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\pendulumCrashSound4.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\ready.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+    <None Include="bin\data\audio\springSound.ogg">
+      <Filter>bin\data\audio</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="bin\data\audio\hookSound.wav">
+      <Filter>bin\data\audio</Filter>
+    </Media>
+    <Media Include="bin\data\audio\stage1.mp3">
+      <Filter>bin\data\audio</Filter>
+    </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="bin\data\fonts\Exo-ExtraBoldItalic.ttf">
+      <Filter>bin\data\fonts</Filter>
+    </Font>
   </ItemGroup>
 </Project>

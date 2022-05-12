@@ -1,51 +1,61 @@
 #include "ofApp.h"
 #include "collisions.h"
 
-glm::vec2 closestPoint;
-
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetFrameRate(60);
 	ofSetCircleResolution(50);
 	ofBackground(200);
+	ofSetVerticalSync(true);
 
 	windowWidth = 1024;
 	windowHeight = 576;
 	ofSetWindowShape(windowWidth, windowHeight);
 
 	stage = Stage("bin/data/stage01.svg", { 0, .5 });
-	pendulum = Pendulum(3900, 980, stage, pause); //250,250
+	stage.setup();
+	pendulum = Pendulum(250, 250, stage, pause); //250,250
 	camera.setup(pendulum.position, windowWidth, windowHeight);
 
 	music.load("audio/stage1.mp3");
-	//music.play();
 
 	animations.setup(windowWidth, windowHeight);
 
 	keyRelease = true;
+	pause = true;
 }
-
+//auto start = chrono::steady_clock::now();
 //--------------------------------------------------------------
 void ofApp::update() {
+	//auto end = chrono::steady_clock::now();
+	//auto diff = end - start;
+	//cout << "update() " << chrono::duration <double, milli>(diff).count() << " ms" << endl;
+	//start = chrono::steady_clock::now();
 	if (!pause)
 	{
+		if (!music.isPlaying()) 
+		{
+			music.play();
+		}
 		pendulum.update(stage, pause, camera.displayPos.x, camera.displayPos.y);
-		//animations.update(inputLock);
+		animations.update(inputLock);
+		stage.update(pendulum.position, pendulum.radius);
 	}
 	if (nextFrame)
+	{
 		pause = true;
+	}
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-	auto start = chrono::steady_clock::now();
+	//auto start = chrono::steady_clock::now();
 
 	ofPushMatrix();
 	ofScale(camera.displayScale); 
 	camera.movement(pendulum, stage.cameras, stage.wallPolygons[0].dimensions, windowWidth/camera.displayScale, windowHeight/camera.displayScale); ///wallPolygons could be more than 1 polygon
 	stage.draw();
 	pendulum.draw(stage);
-    //animations.draw();
-	//camera.draw();
+    animations.draw();
 
 	ofSetLineWidth(2);
 	ofSetColor(0);
@@ -53,9 +63,10 @@ void ofApp::draw(){
 
 	ofPopMatrix();
 
-	auto end = chrono::steady_clock::now();
-	auto diff = end - start;
-	cout << "draw() " << chrono::duration <double, milli>(diff).count() << " ms" << endl;
+	//auto end = chrono::steady_clock::now();
+	//auto diff = end - start;
+	//cout << "draw()   " << chrono::duration <double, milli>(diff).count() << " ms" << endl << endl;;
+	//cout << ofGetFrameRate() << endl;
 }
 
 void ofApp::keyPressed(int key) {
@@ -85,7 +96,7 @@ void ofApp::keyPressed(int key) {
 	if (key == OF_KEY_DEL) {
 		pendulum = Pendulum(200, 250, stage, pause);
 	}
-	if (key == 'q')
+	if (key == 'z')
 	{
 		pendulum.velocity.x = 50;
 		pendulum.floating = false;

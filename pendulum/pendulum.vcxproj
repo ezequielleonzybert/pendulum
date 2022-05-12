@@ -191,6 +191,7 @@
     <ClCompile Include="src\animations.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\collisions.cpp" />
+    <ClCompile Include="src\gem.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\pendulum.cpp" />
@@ -200,9 +201,28 @@
     <ClInclude Include="src\animations.h" />
     <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\collisions.h" />
+    <ClInclude Include="src\gem.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\pendulum.h" />
     <ClInclude Include="src\stage.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\data\audio\go.ogg" />
+    <None Include="bin\data\audio\pendulumCrashSound0.ogg" />
+    <None Include="bin\data\audio\pendulumCrashSound1.ogg" />
+    <None Include="bin\data\audio\pendulumCrashSound2.ogg" />
+    <None Include="bin\data\audio\pendulumCrashSound3.ogg" />
+    <None Include="bin\data\audio\pendulumCrashSound4.ogg" />
+    <None Include="bin\data\audio\ready.ogg" />
+    <None Include="bin\data\audio\springSound.ogg" />
+    <None Include="bin\data\stage01.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="bin\data\audio\hookSound.wav" />
+    <Media Include="bin\data\audio\stage1.mp3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="bin\data\fonts\Exo-ExtraBoldItalic.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>

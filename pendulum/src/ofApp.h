@@ -4,6 +4,7 @@
 #include "pendulum.h"
 #include "camera.h"
 #include "animations.h"
+#include "gem.h"
 
 class ofApp : public ofBaseApp{
 

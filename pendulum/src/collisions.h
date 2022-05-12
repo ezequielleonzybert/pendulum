@@ -34,6 +34,7 @@ namespace collisions
 	bool pointLiesOnSegment(glm::vec2 point, glm::vec2 pt1, glm::vec2 pt2);
 	bool circleSegmentIntersections(glm::vec2 &circlePos, float radius, glm::vec2 pt1, glm::vec2 pt2, vector<glm::vec2> &intersectionPoints);
 	glm::vec2 vectorPerpendicular(glm::vec2 vector);
+	bool test2DCircleRectangle(glm::vec2 circPosition, float circRadius, glm::vec2 rectPosition, float rectWidth, float rectHeight);
 	float sq(float x);
 }
 	

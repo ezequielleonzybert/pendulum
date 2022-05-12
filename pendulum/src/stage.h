@@ -4,6 +4,7 @@
 #pragma once
 #include "ofMain.h"
 #include "animations.h"
+#include "gem.h"
 
 struct Dimensions {
 	float
@@ -44,15 +45,24 @@ public:
 		camera1,
 		camera2,
 		camera3;
+	Gem
+		gem;
+	std::vector<Gem>
+		gems;
+	std::vector<glm::vec2>
+		gemsPositions;
 
 	std::vector<Cameras> cameras;
 	
 	Stage() = default;
 	Stage(std::string dir, glm::vec2 gravity);
-	std::vector<Command> getCommandsFromSvg(std::string dir, std::string layer);
+	void setup();
+	void update(glm::vec2 pendulumPosition, float pendulumRadius);
+	void draw();
+	std::vector<Command> getCommandsFromSvg(std::string &svg, std::string layer);
+	std::vector<glm::vec2> getGemsPositions(std::string &svg);
 	void fillCommands(char command, std::vector<Command> &commands, std::string &svgCopy, int j, int &i);
 	void fillColliders(std::vector<Command> &command, std::vector<Polygons> &polygons, ofPath *path = nullptr);
-	void draw();
 	void getDimensions(vector<Polygons> &polygons);
-
+	string copySvgFile(string dir);
 };

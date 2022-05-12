@@ -405,5 +405,19 @@ namespace collisions
 		return x * x;
 	}
 
+	bool test2DCircleRectangle(glm::vec2 circPosition, float circRadius, glm::vec2 rectPosition, float rectWidth, float rectHeight)
+	{
+		if
+			(
+			circPosition.x + circRadius > rectPosition.x - rectWidth &&
+			circPosition.x - circRadius < rectPosition.x + rectWidth &&
+			circPosition.y + circRadius > rectPosition.y - rectHeight &&
+			circPosition.y - circRadius < rectPosition.y + rectHeight
+			)
+		{
+			return true;
+		}
+		return false;
+	}
 }
 

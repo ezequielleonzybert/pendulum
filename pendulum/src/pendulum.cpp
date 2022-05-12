@@ -10,7 +10,7 @@ Pendulum::Pendulum(float x, float y, Stage& stage, bool pause) {
 	angularVelocity = 0;
 	friction = .999; //.99
 	CoR = 0.7; //.8
-	radius = 35;
+	radius = 25;
 	stamina = 50;
 	start = true;
 	trig = false;
@@ -56,41 +56,71 @@ void Pendulum::update(Stage& stage, bool &pause, float translateX, float transla
 		if (!hook) {
 			/// pendulum collisions
 			velocity += acceleration;
-			//velocity *= friction;
-			/// Walls
-			while (collisions::pendulumColliding(*this, stage.wallPolygons))
+			bool wallColliding;
+			bool springColliding;
+			do
 			{
-				using namespace collisions;
-				//ofVec2f vy = (radius - distanceToCollider) * surfacePerpendicular;
-				//float angle = (-velocity).angleRad(surfacePerpendicular);
-				//float dx = -tan(angle) * vy.length();
-				//ofVec2f newPosition = 2 * dx * surfacePerpendicular.getPerpendicular();
-				//position += velocity + newPosition;
-				//velocity = reflect(velocity, surfacePerpendicular);
-				//velocity *= restitution;
-				//velocity += surfacePerpendicular * 0.2; // to avoid error
-				velocity = glm::reflect(velocity, surfacePerpendicular) * CoR;
-				float velocityMagnitude = glm::length2(velocity);
-				if (velocityMagnitude > 15)
+				wallColliding = collisions::pendulumColliding(*this, stage.wallPolygons);
+				springColliding = collisions::pendulumColliding(*this, stage.springPolygons);
+				if (wallColliding)
 				{
-					float volume = ofClamp(velocityMagnitude*0.01, 0, 1);
-					int new_r = rand() % 5;
-					if (new_r == r)
+					velocity = glm::reflect(velocity, surfacePerpendicular) * CoR;
+					float velocityMagnitude = glm::length2(velocity);
+					if (velocityMagnitude > 15)
 					{
-						new_r = (new_r + 1) % 5;
+						float volume = ofClamp(velocityMagnitude*0.01, 0, 1);
+						int new_r = rand() % 5;
+						if (new_r == r)
+						{
+							new_r = (new_r + 1) % 5;
+						}
+						r = new_r;
+						pendulumCrashSound[new_r].setVolume(volume);
+						pendulumCrashSound[new_r].play();
 					}
-					r = new_r;
-					pendulumCrashSound[new_r].setVolume(volume);
-					pendulumCrashSound[new_r].play();
+				} 
+				else if (springColliding)
+				{
+					velocity = glm::reflect(velocity, surfacePerpendicular);
+					velocity = glm::normalize(velocity + surfacePerpendicular) * 20;
+					springSound.play();
 				}
-			}
+			} while (wallColliding || springColliding);
 
-			/// Springs
-			while (collisions::pendulumColliding(*this, stage.springPolygons)) {
-				velocity = glm::reflect(velocity, surfacePerpendicular); 
-				velocity = glm::normalize(velocity) * 20;
-				springSound.play();
-			}
+
+			//while (collisions::pendulumColliding(*this, stage.wallPolygons))
+			//{
+			//	using namespace collisions;
+			//	//ofVec2f vy = (radius - distanceToCollider) * surfacePerpendicular;
+			//	//float angle = (-velocity).angleRad(surfacePerpendicular);
+			//	//float dx = -tan(angle) * vy.length();
+			//	//ofVec2f newPosition = 2 * dx * surfacePerpendicular.getPerpendicular();
+			//	//position += velocity + newPosition;
+			//	//velocity = reflect(velocity, surfacePerpendicular);
+			//	//velocity *= restitution;
+			//	//velocity += surfacePerpendicular * 0.2; // to avoid error
+			//	velocity = glm::reflect(velocity, surfacePerpendicular) * CoR;
+			//	float velocityMagnitude = glm::length2(velocity);
+			//	if (velocityMagnitude > 15)
+			//	{
+			//		float volume = ofClamp(velocityMagnitude*0.01, 0, 1);
+			//		int new_r = rand() % 5;
+			//		if (new_r == r)
+			//		{
+			//			new_r = (new_r + 1) % 5;
+			//		}
+			//		r = new_r;
+			//		pendulumCrashSound[new_r].setVolume(volume);
+			//		pendulumCrashSound[new_r].play();
+			//	}
+			//}
+
+			///// Springs
+			//while (collisions::pendulumColliding(*this, stage.springPolygons)) {
+			//	velocity = glm::reflect(velocity, surfacePerpendicular); 
+			//	velocity = glm::normalize(velocity) * 20;
+			//	springSound.play();
+			//}
 
 			prevPosition = position;
 			position += velocity;

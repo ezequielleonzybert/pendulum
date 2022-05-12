@@ -1,16 +1,65 @@
 #include "stage.h"
+#include "collisions.h"
+
+void Stage::setup()
+{
+	float gemsAmount = gemsPositions.size();
+	gems.reserve(gemsAmount);
+	gem.setup();
+	for (int i = 0; i < gemsAmount; i++)
+	{
+		gem.position = gemsPositions[i];
+		gem.position0 = gem.position;
+		gem.counter += 20;
+		gems.emplace_back(gem);
+	}
+}
+
+void Stage::update(glm::vec2 pendulumPosition, float pendulumRadius)
+{
+	for (int i = 0; i < gems.size(); i++)
+	{
+		if (!collisions::test2DCircleRectangle(pendulumPosition, pendulumRadius, gems[i].position, gems[i].width, gems[i].height))
+		{
+			gems[i].update();
+		}
+		else
+		{
+			std::iter_swap(gems.begin() + i, gems.end() - 1);
+			gems.pop_back();
+		}
+	}
+}
+
+void Stage::draw() {
+	walls.draw();
+	platforms.draw();
+	springs.draw();
+
+	ofSetLineWidth(1);
+	ofSetColor(0);
+	ofDrawLine(p1, p2);
+
+	for (Gem &g : gems)
+	{
+		g.draw();
+	}
+}
 
 Stage::Stage(std::string dir, glm::vec2 gravity) {
 
 	this->gravity = gravity;
+	string svg = copySvgFile(dir);
 
-	std::vector<Command> wallCommands = getCommandsFromSvg(dir, "walls");
-	std::vector<Command> platformCommands = getCommandsFromSvg(dir, "platforms");
-	std::vector<Command> springsCommands = getCommandsFromSvg(dir, "springs");
+	std::vector<Command> wallCommands = getCommandsFromSvg(svg, "walls");
+	std::vector<Command> platformCommands = getCommandsFromSvg(svg, "platforms");
+	std::vector<Command> springsCommands = getCommandsFromSvg(svg, "springs");
 
-	std::vector<Command> camera1Commands = getCommandsFromSvg(dir, "camera1");
-	std::vector<Command> camera2Commands = getCommandsFromSvg(dir, "camera2");
-	std::vector<Command> camera3Commands = getCommandsFromSvg(dir, "camera3");
+	std::vector<Command> camera1Commands = getCommandsFromSvg(svg, "camera1");
+	std::vector<Command> camera2Commands = getCommandsFromSvg(svg, "camera2");
+	std::vector<Command> camera3Commands = getCommandsFromSvg(svg, "camera3");
+
+	gemsPositions = getGemsPositions(svg);
 
 	fillColliders(wallCommands, wallPolygons, &walls);
 	fillColliders(platformCommands, platformPolygons, &platforms);
@@ -28,17 +77,12 @@ Stage::Stage(std::string dir, glm::vec2 gravity) {
 	getDimensions(cameras[1].polygons);
 	getDimensions(cameras[2].polygons);
 
-	///just works for 1 polygon wall stages;
-	//width = wallPolygons[0].dimensions.width;
-	//height = wallPolygons[0].dimensions.height; 
-
 	walls.setColor(ofColor(255));
 	platforms.setColor(ofColor(100,190,255));
 	springs.setColor(ofColor(255, 255, 50));
 	camera1.setColor(ofColor(0, 255, 0, 100));
 	camera2.setColor(ofColor(0, 0, 255, 100));
 	camera3.setColor(ofColor(255, 0, 0, 100));
-
 }
 
 void Stage::fillColliders(std::vector<Command> &command, std::vector<Polygons> &polygons, ofPath *path) {
@@ -212,33 +256,14 @@ void Stage::fillColliders(std::vector<Command> &command, std::vector<Polygons> &
 	if(path) (*path).close();
 }
 
-std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string layer) {
+std::vector<Command> Stage::getCommandsFromSvg(std::string &svg, std::string layer) {
 
-	ifstream file;
-	std::string svg, svgCopy;
+	std::string svgCopy;
 	std::string toFind;
 	int filePointer;
 	std::vector<Command> commands;
 	int commandCounter = 0;
 	int i;
-
-	file.open(dir, ios::in);
-
-	if (file.fail()) {
-		cout << "couldn't open stage svg file" << endl;
-	}
-
-	else {
-		while (!file.eof()) {
-			char p = file.peek();
-			if (p != '\n' && p != '\t') {
-				svg += file.get();
-			}
-			else {
-				file.ignore();
-			}
-		}
-	}
 
 	svgCopy = svg;
 	toFind = "<g id=\"" + layer + "\">";
@@ -248,7 +273,7 @@ std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string laye
 		toFind = "</g>";
 		int close = svgCopy.find(toFind);
 		svgCopy.erase(close, svgCopy.length());
-		
+
 		// Paths
 		char chars[12] = { 'M', 'm', 'L', 'l', 'C', 'c', 'S', 's', 'H', 'h', 'V', 'v' };
 		toFind = "<path d=\"";
@@ -262,7 +287,7 @@ std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string laye
 					fillCommands(svgCopy[i], commands, svgCopy, commandCounter, i);
 					commandCounter++;
 				}
-				else 
+				else
 				{
 					i++;
 				}
@@ -273,14 +298,14 @@ std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string laye
 		// Rectangles
 		string value;
 		toFind = "<rect x=\"";
-		while ((filePointer = svgCopy.find(toFind)) != std::string::npos) 
+		while ((filePointer = svgCopy.find(toFind)) != std::string::npos)
 		{
 			i = filePointer + toFind.length();
 			commands.push_back(Command());
 			commands[commandCounter].command = 'R';
 			while (svgCopy[i] != '/')
 			{
-				while (isdigit(svgCopy[i]) || svgCopy[i] == '.') 
+				while (isdigit(svgCopy[i]) || svgCopy[i] == '.')
 				{
 					value += svgCopy[i];
 					i++;
@@ -296,7 +321,7 @@ std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string laye
 				}
 			}
 			commandCounter++;
-			svgCopy.erase(filePointer, i-2); // subtracting just i erase part of the next toFind string.
+			svgCopy.erase(filePointer, i - 2); // subtracting just i erase part of the next toFind string.
 		}
 
 		// Polygon points
@@ -324,97 +349,9 @@ std::vector<Command> Stage::getCommandsFromSvg(std::string dir, std::string laye
 				}
 			}
 			commandCounter++;
-			svgCopy.erase(filePointer, i-2);
+			svgCopy.erase(filePointer, i - 2);
 		}
 	}
-	//// paths
-	//svgCopy = svg;
-	//toFind = "<g id=\"" + layer + "\"><path d=\"";
-
-	//if ((filePointer = svgCopy.find(toFind)) != std::string::npos) {
-	//	svgCopy.erase(0, filePointer + toFind.length());
-	//	int i = 0;
-	//	char chars[12] = { 'M', 'm', 'L', 'l', 'C', 'c', 'S', 's', 'H', 'h', 'V', 'v' };
-	//	toFind = "</g>";
-	//	int close = svgCopy.find(toFind);
-	//	while (i < close) {
-	//		while (svgCopy[i] != 'z') {
-	//			if (find(begin(chars), end(chars), svgCopy[i]) != end(chars))
-	//			{
-	//				fillCommands(svgCopy[i], commands, svgCopy, commandCounter, i);
-	//				commandCounter++;
-	//			}
-	//			else i++;
-	//		}
-	//		toFind = "\"/><path d=\"";
-	//		i += toFind.length() + 1;
-	//	}
-	//}
-
-	//// polygon points
-	//svgCopy = svg;
-	//toFind = "<g id=\"" + layer + "\"><polygon points=\"";
-
-	//if ((filePointer = svgCopy.find(toFind)) != std::string::npos) {
-	//	svgCopy.erase(0, filePointer + toFind.length());
-	//	int i = 0;
-	//	int j = 0;
-	//	vector<string> value;
-	//	commands[commandCounter].command = 'P';
-	//	toFind = "</g>";
-	//	int close = svgCopy.find(toFind);
-	//	while (i < close) {
-
-	//		i++;
-	//		/*commands.push_back(Command());
-	//		commands[commandCounter].command = 'P';
-	//		vector<string> values;
-	//		values.push_back(string());
-	//		while (svgCopy[i] != '"') {
-	//			if (isdigit(svgCopy[i]) || svgCopy[i] == '.') {
-	//				values[j] += svgCopy[i];
-	//			}
-	//			else
-	//			{
-	//				commands[commandCounter].values.push_back(stof(values[j]));
-	//				j++;
-	//				values.push_back(string());
-	//			}
-	//			i++;
-	//		}
-	//		commandCounter++;
-	//		j++;
-	//		toFind = "\"/><path d=\"";
-	//		i += toFind.length() + 1;*/
-	//	}
-	//}
-
-	//// rectangles
-	//toFind = "<g id=\"" + layer + "\"><rect x=\"";
-	//if ((filePointer = svgCopy.find(toFind)) != std::string::npos) {
-	//	svgCopy.erase(0, filePointer + toFind.length());
-	//	int i = 0;
-	//	toFind = "</g>";
-	//	int close = svgCopy.find(toFind);
-	//	while (i < close) {
-	//		commands.push_back(Command());
-	//		commands[commandCounter].command = 'R';
-	//		string values[4];
-	//		int j = 0;
-	//		while( j < 4) {
-	//			if (isdigit(svgCopy[i]) || svgCopy[i] == '.') {
-	//				while (svgCopy[i] != '"') {
-	//					values[j] += svgCopy[i];
-	//					i++;
-	//				}
-	//				commands[commandCounter].values.push_back(stof(values[j]));
-	//				j++;
-	//			}
-	//			else i++;
-	//		}
-	//		commandCounter++;
-	//	}
-	//}
 
 	//for(Command c : commands) {
 	//	cout << c.command << " ";
@@ -450,27 +387,6 @@ void Stage::fillCommands(char command, std::vector<Command> &commands, std::stri
 	n = "";
 }
 
-void Stage::draw() {
-	walls.draw();
-	platforms.draw();
-	springs.draw();
-
-	ofSetLineWidth(1);
-	ofSetColor(0);
-	ofDrawLine(p1, p2);
-
-	//DRAW COLLIDER LINES
-	//ofSetLineWidth(5);
-	//ofSetColor(255, 0, 0);
-	//for (int j = 0; j < platformPolygons.size(); j++) {
-	//	for (int i = 0; i < platformPolygons.size() - 1; i++) {
-	//		glm::vec2 p1 = platformPolygons[j].points[i];
-	//		glm::vec2 p2 = platformPolygons[j].points[i + 1];
-	//		ofDrawLine(p1.x, p1.y, p2.x, p2.y);
-	//	}
-	//}
-}
-
 void Stage::getDimensions(vector<Polygons> &polygons) {
 
 	//float width, height,
@@ -504,4 +420,81 @@ void Stage::getDimensions(vector<Polygons> &polygons) {
 		polys.dimensions.width = maxX - minX;
 		polys.dimensions.height = maxY - minY;
 	}
+}
+
+std::vector<glm::vec2> Stage::getGemsPositions(std::string &svg)
+{
+	std::vector<glm::vec2> result;
+	float tile = 57.6;
+	std::string svgCopy;
+	std::string toFind;
+	int filePointer;
+	int i;
+
+	svgCopy = svg;
+	toFind = "<g id=\"gems\">";
+	if ((filePointer = svgCopy.find(toFind)) != std::string::npos)
+	{
+		svgCopy.erase(0, filePointer + toFind.length());
+		toFind = "</g>";
+		int close = svgCopy.find(toFind);
+		svgCopy.erase(close, svgCopy.length());
+		string value;
+		vector<float> n;
+		toFind = "<rect x=\"";
+		while ((filePointer = svgCopy.find(toFind)) != std::string::npos)
+		{
+			i = filePointer + toFind.length();
+			while (svgCopy[i] != 'w')
+			{
+				while (isdigit(svgCopy[i]) || svgCopy[i] == '.')
+				{
+					value += svgCopy[i];
+					i++;
+				}
+				if (value != "")
+				{
+					n.push_back(stof(value)+tile/2.f);
+					value = "";
+				}
+				else
+				{
+					i++;
+				}
+			}
+			svgCopy.erase(filePointer, i - 2);
+		}
+		for (int j = 0; j < n.size(); j += 2)
+		{
+			result.push_back({ n[j], n[j + 1] });
+		}
+	}
+	return result;
+}
+
+string Stage::copySvgFile(string dir)
+{
+	ifstream file;
+	std::string svg;
+
+	file.open(dir, ios::in);
+
+	if (file.fail()) {
+		cout << "couldn't open stage svg file" << endl;
+	}
+
+	else {
+		while (!file.eof()) {
+			char p = file.peek();
+			if (p != '\n' && p != '\t') {
+				svg += file.get();
+			}
+			else {
+				file.ignore();
+			}
+		}
+	}
+	file.close();
+
+	return svg;
 }
